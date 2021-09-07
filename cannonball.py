@@ -213,7 +213,7 @@ class CannonBallGame:
                         print("the motion: (" + str(self.cannonball.motion.x) + str(", ") + str(self.cannonball.motion.y))
 
             if self.cannonball.motion.y > 0: # bottom of rectangle
-                n = Vector(-(rectangle.lb - rectangle.rb).y, (rectangle.lb - rectangle.rb).x)
+                n = Vector(-(rectangle.lb - rectanggit sle.rb).y, (rectangle.lb - rectangle.rb).x)
                 thit = (n.dot_product(rectangle.lb - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
                 if 0 <= thit < (self.delta_time):
                     phit = self.cannonball.position + (self.cannonball.motion * thit)
