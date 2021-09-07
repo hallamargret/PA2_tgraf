@@ -162,30 +162,29 @@ class VectorMotion:
                 self.cannonball.fired = False
                 print("Next level")
 
-        self.cannonball.position.x += self.cannonball.motion.x
-        self.cannonball.position.y += self.cannonball.motion.y
+        self.cannonball.position.x += self.cannonball.motion.x * self.delta_time
+        self.cannonball.position.y += self.cannonball.motion.y * self.delta_time
 
-        # self.bounce_check()
-
-
+        self.bounce_check()
 
 
-    # def bounce_check(self):
-    #     for rectangle in self.rectangles:
-    #         if self.cannonball.motion.x > 0: #Vinstri hlið
-    #             n = Vector(-((rectangle.y + 50) - (rectangle.y - 50)), (rectangle.x - 50) - (rectangle.x - 50))
-    #             thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
-    #             if 0 <= thit < (self.delta_time):
-    #                 print("Delta time: " + str(self.delta_time))
-    #                 phit = self.cannonball.position + (self.cannonball.motion * thit)
-    #                 print(phit)
-    #             else:
-    #                 print(thit)
-    #                 print("Delta time: " + str(self.delta_time))
-    #         if self.cannonball.motion.y > 0:
-    #             n = Vector(-((rectangle.y - 30) - (rectangle.y - 30)), (rectangle.x + 30) - (rectangle.x - 30))
-    #             thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
-    #             print(thit)
+
+
+    def bounce_check(self):
+        for rectangle in self.rectangles:
+            if self.cannonball.motion.x > 0: #Vinstri hlid
+                n = Vector(-(rectangle.lt - rectangle.lb).y, (rectangle.lt - rectangle.lb).x)
+                thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
+                if 0 <= thit < (self.delta_time):
+                    phit = self.cannonball.position + (self.cannonball.motion * thit)
+                    if 
+                    new_motion = self.cannonball.motion - (Vector(-1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(-1, 0)))))
+                    self.cannonball.position = phit
+                    self.cannonball.motion = new_motion
+            # if self.cannonball.motion.y > 0:
+            #     n = Vector(-((rectangle.y - 30) - (rectangle.y - 30)), (rectangle.x + 30) - (rectangle.x - 30))
+            #     thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
+            #     print(thit)
                 
     #     # Rúlla í gegnum kassana í skjánum og gera bounce check
 
@@ -260,8 +259,8 @@ class VectorMotion:
     
     def fire_ball(self):
         self.cannonball.fired = True
-        self.cannonball.motion.x = self.speed * -sin(self.angle * pi/180.0) * self.delta_time
-        self.cannonball.motion.y = self.speed * cos(self.angle * pi/180.0) * self.delta_time
+        self.cannonball.motion.x = self.speed * -sin(self.angle * pi/180.0)
+        self.cannonball.motion.y = self.speed * cos(self.angle * pi/180.0)
         self.cannonball.position.x = (WIDTH/2) + self.cannonball.motion.x * self.delta_time
         self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
 
