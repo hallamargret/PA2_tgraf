@@ -103,6 +103,8 @@ class Rectangle:
         self.rb = Point(x + extra, y - extra)
         self.lt = Point(x - extra, y + extra)
         self.rt = Point(x + extra, y + extra)
+        self.hight = 2 * extra
+        self.width = 2 * extra
 
 
 WIDTH = 800
@@ -164,10 +166,12 @@ class VectorMotion:
                 self.cannonball.fired = False
                 print("Next level")
 
+
         self.cannonball.position.x += self.cannonball.motion.x * self.delta_time
         self.cannonball.position.y += self.cannonball.motion.y * self.delta_time
-
-        self.bounce_check()
+        
+        if self.cannonball.fired == True:
+            self.bounce_check()
 
 
 
@@ -231,7 +235,7 @@ class VectorMotion:
             #     thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
             #     print(thit)
                 
-    #     # Rúlla í gegnum kassana í skjánum og gera bounce check
+    #     # Rulla i gegnum kassana i skjánum og gera bounce check
 
 
     def display(self):
@@ -311,8 +315,30 @@ class VectorMotion:
 
     def new_rectangle(self, position):
         new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30)
-        #if 
-        self.rectangles.append(new_rectangle)
+        if len(self.rectangles) == 0:
+            self.rectangles.append(new_rectangle)
+            print("first added")
+        else:
+            counter = 0
+            bool = True
+            for rec in self.rectangles:
+                counter += 1
+                print("rec number: ", str(counter))
+                if (abs(rec.x - new_rectangle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.y - new_rectangle.y) < (rec.hight/2 + new_rectangle.hight/2)):
+                    bool = False
+                    
+            if bool == True:
+                self.rectangles.append(new_rectangle)
+        #     i = 1
+        #     for rec in self.rectangles:
+        #         print("rect number: " + str(i))
+        #         i +=1
+        #         if not((rec.lb.x < new_rectangle.lt.x < rec.rb.x) or (rec.lb.y < new_rectangle.lt.y < rec.lt.y)): 
+        #             if not((rec.lb.x < new_rectangle.rt.x < rec.rb.x) or (rec.lb.y < new_rectangle.rt.y < rec.lt.y)): 
+        #                 if not((rec.lb.x < new_rectangle.lb.x < rec.rb.x) or (rec.lb.y < new_rectangle.lb.y < rec.lt.y)): 
+        #                     if not((rec.lb.x < new_rectangle.rb.x < rec.rb.x) or (rec.lb.y < new_rectangle.rb.y < rec.lt.y)): 
+        #                         self.rectangles.append(new_rectangle)
+        #                         break
 
 
 
