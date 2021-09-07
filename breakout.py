@@ -1,5 +1,6 @@
 import pygame
 from pygame import key
+from pygame import rect
 from pygame.locals import *
 
 from OpenGL.GL import *
@@ -17,12 +18,40 @@ class Vector:
         self.x = x
         self.y = y
     
+    def __add__(self, other):
+        new_x = self.x + other.x
+        new_y = self.y + other.y
+        return Vector(new_x, new_y)
+    
+    def __sub__(self, other):
+        new_x = self.x - other.x
+        new_y = self.y - other.y
+        return Vector(new_x, new_y)
+
+    def dot_product(self, other):
+        return (self.x * other.x) + (self.y * other.y)
+
+    def __mul__(self, other):
+        return Vector(self.x * other, self.y * other)
 
 class Point:
 
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+    def __add__(self, other):
+        new_x = self.x + other.x
+        new_y = self.y + other.y
+        return Point(new_x, new_y)
+    
+    def __sub__(self, other):
+        new_x = self.x - other.x
+        new_y = self.y - other.y
+        return Point(new_x, new_y)
+    
+
+
 
 class Ball:
 
@@ -64,6 +93,14 @@ class BallObject:
         self.ball.display()
         glPopMatrix()
 
+class Rectangle:
+    def __init__(self, x, y, extra): # Finna eitthvað annað orð fyrir extra!! 
+        self.x = x
+        self.y = y
+        self.lb = Point(x - extra, y - extra)
+        self.rb = Point(x + extra, y - extra)
+        self.lt = Point(x - extra, y + extra)
+        self.rt = Point(x + extra, y + extra)
 
 
 WIDTH = 800
@@ -78,59 +115,79 @@ class VectorMotion:
 
         middle = WIDTH/2
 
-        self.cannon_direction = Vector(0,1)
+        #self.cannon_direction = Vector(0,1)
         self.cannon_point = Point(int(middle), 0)
 
 
-        self.ball_position = Point((WIDTH/2), 100)
+        self.ball_position = Point(0, 0)
         self.ball_motion = Vector(0, 0)
 
         self.cannonball = BallObject(10, self.ball_position, self.ball_motion, 1.0, 1.0, 1.0)
 
         self.clock = pygame.time.Clock()
         self.angle = - 45
-        self.speed = 20
+        self.speed = 200
 
-        self.goal_large = BallObject(40, Point(WIDTH/2, 480), Vector(0,0), 0.0, 1.0, 0.0)
-        self.goal_small = BallObject(30, Point(WIDTH/2, 480), Vector(0,0), 0.0, 0.8, 0.0)
+        self.goal = Point(WIDTH/2, HEIGTH-100)
+
+        self.rectangles = []
+        self.delta_time = 0
 
         #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
         #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
 
 
     def update(self):
-        delta_time = self.clock.tick() / 1000
+        self.delta_time = self.clock.tick(60) / 1000
 
+        
 
         pressed = pygame.key.get_pressed()
-        #if pressed[pygame.K_UP]:
-            #self.motion.y += 15 * delta_time
-        #if pressed[pygame.K_DOWN]:
-            #self.motion.y -= 15 * delta_time
-        #if pressed[pygame.K_LEFT]:
-            #self.motion.x -= 15 * delta_time
-        #if pressed[pygame.K_RIGHT]:
-            #self.motion.x += 15 * delta_time
         if pressed[pygame.K_LEFT]:
             if self.angle < 45:
-                self.angle += 180 * delta_time
+                self.angle += 180 * self.delta_time
         if pressed[pygame.K_RIGHT]:
             if self.angle > -45:
-                self.angle -= 180 * delta_time
+                self.angle -= 180 * self.delta_time
         
-        self.cannon_direction.x = self.speed * -sin(self.angle * 3.1415/180.0)
-        self.cannon_direction.y = self.speed * cos(self.angle * 3.1415/180.0)
+        #self.cannon_direction.x = 
+        #self.cannon_direction.y = self.speed * cos(self.angle * 3.1415/180.0)
 
-        if self.cannonball.position.x < 0 or self.cannonball.position.x > WIDTH:
-            self.cannonball.fired = False
-        elif self.cannonball.position.y < 0 or self.cannonball.position.y > HEIGTH:
-            self.cannonball.fired = False
+        if self.cannonball.fired == True:
+            if self.cannonball.position.x < 0 or self.cannonball.position.x > WIDTH:
+                self.cannonball.fired = False
+            elif self.cannonball.position.y < 0 or self.cannonball.position.y > HEIGTH:
+                self.cannonball.fired = False
+            if (self.goal.x - 50) <= self.cannonball.position.x <= (self.goal.x + 50) and (self.goal.y - 50) <= self.cannonball.position.y <= (self.goal.y + 50):
+                self.cannonball.fired = False
+                print("Next level")
 
         self.cannonball.position.x += self.cannonball.motion.x
         self.cannonball.position.y += self.cannonball.motion.y
 
+        # self.bounce_check()
 
 
+
+
+    # def bounce_check(self):
+    #     for rectangle in self.rectangles:
+    #         if self.cannonball.motion.x > 0: #Vinstri hlið
+    #             n = Vector(-((rectangle.y + 50) - (rectangle.y - 50)), (rectangle.x - 50) - (rectangle.x - 50))
+    #             thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
+    #             if 0 <= thit < (self.delta_time):
+    #                 print("Delta time: " + str(self.delta_time))
+    #                 phit = self.cannonball.position + (self.cannonball.motion * thit)
+    #                 print(phit)
+    #             else:
+    #                 print(thit)
+    #                 print("Delta time: " + str(self.delta_time))
+    #         if self.cannonball.motion.y > 0:
+    #             n = Vector(-((rectangle.y - 30) - (rectangle.y - 30)), (rectangle.x + 30) - (rectangle.x - 30))
+    #             thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
+    #             print(thit)
+                
+    #     # Rúlla í gegnum kassana í skjánum og gera bounce check
 
 
     def display(self):
@@ -151,19 +208,12 @@ class VectorMotion:
         glVertex2f(WIDTH - (WIDTH/6)*2, 100)
         glEnd()
 
-        glPushMatrix()
-    
-        self.goal_large.display_object()
-        self.goal_small.display_object()
 
         if self.cannonball.fired == True:
             self.cannonball.display_object()
 
-        glPopMatrix()
 
         glPushMatrix()
-        
-
 
         glTranslate(self.cannon_point.x, self.cannon_point.y, 0)
         glRotate(self.angle, 0, 0, 1)
@@ -180,16 +230,44 @@ class VectorMotion:
 
         glPopMatrix()
 
-        
+        glPushMatrix()
+        glColor3f(0.0, 0.9, 0.0)
+        glTranslate(self.goal.x, self.goal.y, 0)
+        glBegin(GL_TRIANGLES)
+        glVertex2f(0 - 50, 0 - 50)
+        glVertex2f(0 - 50, 0 + 50)
+        glVertex2f(0 + 50, 0 - 50)
+        glVertex2f(0 - 50, 0 + 50)
+        glVertex2f(0 + 50, 0 - 50)
+        glVertex2f(0 + 50, 0 + 50)
+        glEnd()
+        glPopMatrix()
+
+        glPushMatrix()
+        glColor3f(0.0, 0.0, 1.0)
+        for rectangle in self.rectangles:
+            glBegin(GL_TRIANGLES)
+            glVertex2f(rectangle.lb.x, rectangle.lb.y)
+            glVertex2f(rectangle.lt.x, rectangle.lt.y)
+            glVertex2f(rectangle.rb.x, rectangle.rb.y)
+            glVertex2f(rectangle.lt.x, rectangle.lt.y)
+            glVertex2f(rectangle.rb.x, rectangle.rb.y)
+            glVertex2f(rectangle.rt.x, rectangle.rt.y)
+            glEnd()
+        glPopMatrix()
 
         pygame.display.flip()
     
     def fire_ball(self):
         self.cannonball.fired = True
-        self.cannonball.motion.x = self.cannon_direction.x/30
-        self.cannonball.motion.y = self.cannon_direction.y/30
-        self.cannonball.position.x = (WIDTH/2) + self.cannon_direction.x
-        self.cannonball.position.y = self.cannon_direction.y
+        self.cannonball.motion.x = self.speed * -sin(self.angle * pi/180.0) * self.delta_time
+        self.cannonball.motion.y = self.speed * cos(self.angle * pi/180.0) * self.delta_time
+        self.cannonball.position.x = (WIDTH/2) + self.cannonball.motion.x * self.delta_time
+        self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
+
+    def new_rectangle(self, position):
+        self.rectangles.append(Rectangle(position[0], HEIGTH - position[1], 30))
+
 
 
     def game_loop(self):
@@ -206,6 +284,9 @@ class VectorMotion:
                 elif event.key == K_SPACE or event.key == K_z:
                     if self.cannonball.fired == False:
                         self.fire_ball()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.new_rectangle(pygame.mouse.get_pos())
                 
         self.update()
         self.display()
