@@ -96,7 +96,7 @@ class BallObject:
         glPopMatrix()
 
 class Rectangle:
-    def __init__(self, x, y, height, width): # Finna eitthvað annað ord fyrir extra!! 
+    def __init__(self, x, y, height, width): # Finna eitthvad annad ord fyrir extra!! 
         self.x = x
         self.y = y
         self.lb = Point(x - width/2, y - height/2)
@@ -213,7 +213,7 @@ class CannonBallGame:
                         print("the motion: (" + str(self.cannonball.motion.x) + str(", ") + str(self.cannonball.motion.y))
 
             if self.cannonball.motion.y > 0: # bottom of rectangle
-                n = Vector(-(rectangle.lb - rectanggit sle.rb).y, (rectangle.lb - rectangle.rb).x)
+                n = Vector(-(rectangle.lb - rectangle.rb).y, (rectangle.lb - rectangle.rb).x)
                 thit = (n.dot_product(rectangle.lb - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
                 if 0 <= thit < (self.delta_time):
                     phit = self.cannonball.position + (self.cannonball.motion * thit)
@@ -242,7 +242,7 @@ class CannonBallGame:
             #     thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
             #     print(thit)
                 
-    #     # Rulla i gegnum kassana i skjánum og gera bounce check
+    #     # Rulla i gegnum kassana i skjanum og gera bounce check
 
 
     def display(self):
