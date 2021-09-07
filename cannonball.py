@@ -110,7 +110,7 @@ class Rectangle:
 WIDTH = 800
 HEIGTH = 600
 
-class VectorMotion:
+class CannonBallGame:
 
     def __init__(self):
         pygame.display.init()
@@ -137,6 +137,9 @@ class VectorMotion:
         self.rectangles = []
         self.delta_time = 0
 
+        self.going_left = False
+        self.going_right = False
+
         #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
         #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
 
@@ -144,15 +147,19 @@ class VectorMotion:
     def update(self):
         self.delta_time = self.clock.tick(60) / 1000
 
-        
 
-        pressed = pygame.key.get_pressed()
-        if pressed[pygame.K_LEFT]:
-            if self.angle < 45:
-                self.angle += 180 * self.delta_time
-        if pressed[pygame.K_RIGHT]:
-            if self.angle > -45:
-                self.angle -= 180 * self.delta_time
+        if self.going_left and self.angle < 45:
+            self.angle += 180 * self.delta_time
+        if self.going_right and self.angle > -45:
+            self.angle -= 180 * self.delta_time
+
+        # pressed = pygame.key.get_pressed()
+        # if pressed[pygame.K_LEFT]:
+        #     if self.angle < 45:
+        #         self.angle += 180 * self.delta_time
+        # if pressed[pygame.K_RIGHT]:
+        #     if self.angle > -45:
+        #         self.angle -= 180 * self.delta_time
         
         #self.cannon_direction.x = 
         #self.cannon_direction.y = self.speed * cos(self.angle * 3.1415/180.0)
@@ -347,6 +354,7 @@ class VectorMotion:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
                     pygame.quit()
@@ -356,6 +364,17 @@ class VectorMotion:
                 elif event.key == K_SPACE or event.key == K_z:
                     if self.cannonball.fired == False:
                         self.fire_ball()
+                elif event.key == K_LEFT:
+                    self.going_left = True
+                elif event.key == K_RIGHT:
+                    self.going_right = True
+
+            elif event.type == pygame.KEYUP:
+                if event.key == K_LEFT:
+                    self.going_left = False
+                elif event.key == K_RIGHT:
+                    self.going_right = False
+
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     self.new_rectangle(pygame.mouse.get_pos())
@@ -364,6 +383,6 @@ class VectorMotion:
         self.display()
 
 if __name__ == "__main__":
-    game = VectorMotion()
+    game = CannonBallGame()
     while True:
         game.game_loop()
