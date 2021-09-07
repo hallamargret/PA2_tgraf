@@ -50,6 +50,8 @@ class Point:
         new_y = self.y - other.y
         return Point(new_x, new_y)
     
+    def distance(self, other):
+        return sqrt(((self.x - other.x)**2) + ((self.y - other.y)**2))
 
 
 
@@ -94,7 +96,7 @@ class BallObject:
         glPopMatrix()
 
 class Rectangle:
-    def __init__(self, x, y, extra): # Finna eitthvað annað orð fyrir extra!! 
+    def __init__(self, x, y, extra): # Finna eitthvað annað ord fyrir extra!! 
         self.x = x
         self.y = y
         self.lb = Point(x - extra, y - extra)
@@ -120,7 +122,7 @@ class VectorMotion:
 
 
         self.ball_position = Point(0, 0)
-        self.ball_motion = Vector(0, 0)
+        self.ball_motion = Vector(1, 1)
 
         self.cannonball = BallObject(10, self.ball_position, self.ball_motion, 1.0, 1.0, 1.0)
 
@@ -172,15 +174,58 @@ class VectorMotion:
 
     def bounce_check(self):
         for rectangle in self.rectangles:
-            if self.cannonball.motion.x > 0: #Vinstri hlid
+            if self.cannonball.motion.x > 0: #left side of rectangle
                 n = Vector(-(rectangle.lt - rectangle.lb).y, (rectangle.lt - rectangle.lb).x)
                 thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
                 if 0 <= thit < (self.delta_time):
                     phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    if 
-                    new_motion = self.cannonball.motion - (Vector(-1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(-1, 0)))))
-                    self.cannonball.position = phit
-                    self.cannonball.motion = new_motion
+                    print("checking if hits")
+                    if (rectangle.lt.distance(phit) + rectangle.lb.distance(phit) == rectangle.lt.distance(rectangle.lb)):
+                        print(rectangle.lt.distance(phit) + rectangle.lb.distance(phit) == rectangle.lt.distance(rectangle.lb))
+                        new_motion = self.cannonball.motion - (Vector(-1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(-1, 0)))))
+                        print("it hits")
+                        self.cannonball.position = phit
+                        self.cannonball.motion = new_motion
+            else: 
+                n = Vector(-(rectangle.rt - rectangle.rb).y, (rectangle.rt - rectangle.rb).x)
+                print("n: (" + str(n.x) + ", " + str(n.y) + ")")
+                thit = (n.dot_product(rectangle.rt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
+                if 0 <= thit < (self.delta_time):
+                    phit = self.cannonball.position + (self.cannonball.motion * thit)
+                    print("checking if hits")
+                    if (rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb)):
+                        print(rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb))
+                        new_motion = self.cannonball.motion - (Vector(1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(1, 0)))))
+                        print("it hits")
+                        self.cannonball.position = phit
+                        self.cannonball.motion = new_motion
+                        print("the motion: (" + str(self.cannonball.motion.x) + str(", ") + str(self.cannonball.motion.y))
+
+            if self.cannonball.motion.y > 0: # bottom of rectangle
+                n = Vector(-(rectangle.lb - rectangle.rb).y, (rectangle.lb - rectangle.rb).x)
+                thit = (n.dot_product(rectangle.lb - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
+                if 0 <= thit < (self.delta_time):
+                    phit = self.cannonball.position + (self.cannonball.motion * thit)
+                    print("checking if hits")
+                    if (rectangle.lb.distance(phit) + rectangle.rb.distance(phit) == rectangle.lb.distance(rectangle.rb)):
+                        print(rectangle.lb.distance(phit) + rectangle.rb.distance(phit) == rectangle.lb.distance(rectangle.rb))
+                        new_motion = self.cannonball.motion - (Vector(0, -1) *(2.0 * (self.cannonball.motion.dot_product(Vector(0, -1)))))
+                        print("it hits")
+                        self.cannonball.position = phit
+                        self.cannonball.motion = new_motion
+            else:
+                n = Vector(-(rectangle.lt - rectangle.rt).y, (rectangle.lt - rectangle.rt).x)
+                thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
+                if 0 <= thit < (self.delta_time):
+                    phit = self.cannonball.position + (self.cannonball.motion * thit)
+                    print("checking if hits")
+                    if (rectangle.lt.distance(phit) + rectangle.rt.distance(phit) == rectangle.lt.distance(rectangle.rt)):
+                        print(rectangle.lt.distance(phit) + rectangle.rt.distance(phit) == rectangle.lt.distance(rectangle.rt))
+                        new_motion = self.cannonball.motion - (Vector(0, 1) *(2.0 * (self.cannonball.motion.dot_product(Vector(0, 1)))))
+                        print("it hits")
+                        self.cannonball.position = phit
+                        self.cannonball.motion = new_motion
+            
             # if self.cannonball.motion.y > 0:
             #     n = Vector(-((rectangle.y - 30) - (rectangle.y - 30)), (rectangle.x + 30) - (rectangle.x - 30))
             #     thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
@@ -265,7 +310,9 @@ class VectorMotion:
         self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
 
     def new_rectangle(self, position):
-        self.rectangles.append(Rectangle(position[0], HEIGTH - position[1], 30))
+        new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30)
+        #if 
+        self.rectangles.append(new_rectangle)
 
 
 
