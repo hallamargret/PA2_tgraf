@@ -96,15 +96,15 @@ class BallObject:
         glPopMatrix()
 
 class Rectangle:
-    def __init__(self, x, y, extra): # Finna eitthvað annað ord fyrir extra!! 
+    def __init__(self, x, y, height, width): # Finna eitthvað annað ord fyrir extra!! 
         self.x = x
         self.y = y
-        self.lb = Point(x - extra, y - extra)
-        self.rb = Point(x + extra, y - extra)
-        self.lt = Point(x - extra, y + extra)
-        self.rt = Point(x + extra, y + extra)
-        self.hight = 2 * extra
-        self.width = 2 * extra
+        self.lb = Point(x - width/2, y - height/2)
+        self.rb = Point(x + width/2, y - height/2)
+        self.lt = Point(x - width/2, y + height/2)
+        self.rt = Point(x + width/2, y + height/2)
+        self.hight = height
+        self.width = width
 
 
 WIDTH = 800
@@ -321,10 +321,9 @@ class CannonBallGame:
         self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
 
     def new_rectangle(self, position):
-        new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30)
+        new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30, 50)
         if len(self.rectangles) == 0:
             self.rectangles.append(new_rectangle)
-            print("first added")
         else:
             counter = 0
             bool = True
@@ -336,16 +335,7 @@ class CannonBallGame:
                     
             if bool == True:
                 self.rectangles.append(new_rectangle)
-        #     i = 1
-        #     for rec in self.rectangles:
-        #         print("rect number: " + str(i))
-        #         i +=1
-        #         if not((rec.lb.x < new_rectangle.lt.x < rec.rb.x) or (rec.lb.y < new_rectangle.lt.y < rec.lt.y)): 
-        #             if not((rec.lb.x < new_rectangle.rt.x < rec.rb.x) or (rec.lb.y < new_rectangle.rt.y < rec.lt.y)): 
-        #                 if not((rec.lb.x < new_rectangle.lb.x < rec.rb.x) or (rec.lb.y < new_rectangle.lb.y < rec.lt.y)): 
-        #                     if not((rec.lb.x < new_rectangle.rb.x < rec.rb.x) or (rec.lb.y < new_rectangle.rb.y < rec.lt.y)): 
-        #                         self.rectangles.append(new_rectangle)
-        #                         break
+
 
 
 
