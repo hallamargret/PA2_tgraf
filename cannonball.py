@@ -96,15 +96,15 @@ class BallObject:
         glPopMatrix()
 
 class Rectangle:
-    def __init__(self, x, y, height, width): # Finna eitthvad annad ord fyrir extra!! 
-        self.x = x
-        self.y = y
-        self.lb = Point(x - width/2, y - height/2)
-        self.rb = Point(x + width/2, y - height/2)
-        self.lt = Point(x - width/2, y + height/2)
-        self.rt = Point(x + width/2, y + height/2)
-        self.hight = height
-        self.width = width
+    def __init__(self, startPoint, endPoint): # Finna eitthvad annad ord fyrir extra!! 
+        self.height = abs(startPoint.y - endPoint.y)
+        self.width = abs(startPoint.x - endPoint.x)
+        self.middle = Point(((startPoint.x + endPoint.x)/2), ((startPoint.y + endPoint.y)/2))
+        self.lb = Point(self.middle.x - self.width/2, self.middle.y - self.height/2)
+        self.rb = Point(self.middle.x + self.width/2, self.middle.y - self.height/2)
+        self.lt = Point(self.middle.x - self.width/2, self.middle.y + self.height/2)
+        self.rt = Point(self.middle.x + self.width/2, self.middle.y + self.height/2)
+
 
 
 WIDTH = 800
@@ -132,13 +132,17 @@ class CannonBallGame:
         self.angle = - 45
         self.speed = 200
 
-        self.goal = Point(WIDTH/2, HEIGTH-100)
+        self.goal = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+        
 
         self.rectangles = []
         self.delta_time = 0
 
         self.going_left = False
         self.going_right = False
+
+        self.rectDrawing = False
+        self.rectStartPoint = Point(1,1)
 
         #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
         #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
@@ -169,7 +173,7 @@ class CannonBallGame:
                 self.cannonball.fired = False
             elif self.cannonball.position.y < 0 or self.cannonball.position.y > HEIGTH:
                 self.cannonball.fired = False
-            if (self.goal.x - 50) <= self.cannonball.position.x <= (self.goal.x + 50) and (self.goal.y - 50) <= self.cannonball.position.y <= (self.goal.y + 50):
+            if (self.goal.middle.x - 50) <= self.cannonball.position.x <= (self.goal.middle.x + 50) and (self.goal.middle.y - 50) <= self.cannonball.position.y <= (self.goal.middle.y + 50):
                 self.cannonball.fired = False
                 print("Next level")
 
@@ -197,13 +201,12 @@ class CannonBallGame:
                         print("it hits")
                         self.cannonball.position = phit
                         self.cannonball.motion = new_motion
-            else: 
+            elif self.cannonball.motion.x < 0: 
                 n = Vector(-(rectangle.rt - rectangle.rb).y, (rectangle.rt - rectangle.rb).x)
-                print("n: (" + str(n.x) + ", " + str(n.y) + ")")
+                #print("n: (" + str(n.x) + ", " + str(n.y) + ")")
                 thit = (n.dot_product(rectangle.rt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
                 if 0 <= thit < (self.delta_time):
                     phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    print("checking if hits")
                     if (rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb)):
                         print(rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb))
                         new_motion = self.cannonball.motion - (Vector(1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(1, 0)))))
@@ -224,7 +227,7 @@ class CannonBallGame:
                         print("it hits")
                         self.cannonball.position = phit
                         self.cannonball.motion = new_motion
-            else:
+            elif self.cannonball.motion.y < 0:
                 n = Vector(-(rectangle.lt - rectangle.rt).y, (rectangle.lt - rectangle.rt).x)
                 thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
                 if 0 <= thit < (self.delta_time):
@@ -287,7 +290,7 @@ class CannonBallGame:
 
         glPushMatrix()
         glColor3f(0.0, 0.9, 0.0)
-        glTranslate(self.goal.x, self.goal.y, 0)
+        glTranslate(self.goal.middle.x, self.goal.middle.y, 0)
         glBegin(GL_TRIANGLES)
         glVertex2f(0 - 50, 0 - 50)
         glVertex2f(0 - 50, 0 + 50)
@@ -311,6 +314,22 @@ class CannonBallGame:
             glEnd()
         glPopMatrix()
 
+        if self.rectDrawing:
+            curr = pygame.mouse.get_pos()
+            currPoint = Point(curr[0], HEIGTH - curr[1])
+            glPushMatrix()
+            glColor3f(1.0, 0.0, 0.0)
+            glBegin(GL_TRIANGLES)
+            glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
+            glVertex2f(currPoint.x, currPoint.y)
+            glVertex2f(self.rectStartPoint.x, currPoint.y)
+            glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
+            glVertex2f(currPoint.x, currPoint.y)
+            glVertex2f(currPoint.x, self.rectStartPoint.y)
+            glEnd()
+            glPopMatrix()
+
+
         pygame.display.flip()
     
     def fire_ball(self):
@@ -320,8 +339,9 @@ class CannonBallGame:
         self.cannonball.position.x = (WIDTH/2) + self.cannonball.motion.x * self.delta_time
         self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
 
-    def new_rectangle(self, position):
-        new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30, 50)
+    def new_rectangle(self, startPoint, endPoint):
+        #new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30, 50)
+        new_rectangle = Rectangle(startPoint, endPoint)
         if len(self.rectangles) == 0:
             self.rectangles.append(new_rectangle)
         else:
@@ -330,9 +350,11 @@ class CannonBallGame:
             for rec in self.rectangles:
                 counter += 1
                 print("rec number: ", str(counter))
-                if (abs(rec.x - new_rectangle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.y - new_rectangle.y) < (rec.hight/2 + new_rectangle.hight/2)):
+                if (abs(rec.middle.x - new_rectangle.middle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.middle.y - new_rectangle.middle.y) < (rec.height/2 + new_rectangle.height/2)):
                     bool = False
-                    
+            if (abs(self.goal.middle.x - new_rectangle.middle.x) < (self.goal.width/2 + new_rectangle.width/2)) and (abs(self.goal.middle.y - new_rectangle.middle.y) < (self.goal.height/2 + new_rectangle.height/2)):
+                bool = False
+            
             if bool == True:
                 self.rectangles.append(new_rectangle)
 
@@ -367,7 +389,16 @@ class CannonBallGame:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    self.new_rectangle(pygame.mouse.get_pos())
+                    self.rectDrawing = True
+                    startPoint = pygame.mouse.get_pos()
+                    self.rectStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    curr = pygame.mouse.get_pos()
+                    endPoint = Point(curr[0], HEIGTH - curr[1])
+                    self.new_rectangle(self.rectStartPoint, endPoint)
+                    self.rectDrawing = False
+
                 
         self.update()
         self.display()
