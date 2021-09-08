@@ -106,7 +106,6 @@ class Rectangle:
         self.rt = Point(self.middle.x + self.width/2, self.middle.y + self.height/2)
 
 
-
 WIDTH = 800
 HEIGTH = 600
 
@@ -388,16 +387,26 @@ class CannonBallGame:
                     self.going_right = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1:   #left click
                     self.rectDrawing = True
                     startPoint = pygame.mouse.get_pos()
                     self.rectStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
+                if event.button == 3:   #right click
+                    #self.rectDrawing = True
+                    #draw line 
+                    startPoint = pygame.mouse.get_pos()
+
             elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
+                if event.button == 1:   #left click
                     curr = pygame.mouse.get_pos()
                     endPoint = Point(curr[0], HEIGTH - curr[1])
                     self.new_rectangle(self.rectStartPoint, endPoint)
                     self.rectDrawing = False
+                if event.button == 3:   #right click
+                    #make line if valid
+                    curr = pygame.mouse.get_pos()
+                    endPoint = Point(curr[0], HEIGTH - curr[1])
+                    
 
                 
         self.update()
