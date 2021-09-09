@@ -49,6 +49,12 @@ class Point:
         new_x = self.x - other.x
         new_y = self.y - other.y
         return Point(new_x, new_y)
+
+    def __eq__(self, other):
+        if self.x == other.x and self.y == other.y:
+            return True
+        else:
+            return False
     
     def distance(self, other):
         return sqrt(((self.x - other.x)**2) + ((self.y - other.y)**2))
@@ -105,6 +111,13 @@ class Rectangle:
         self.lt = Point(self.middle.x - self.width/2, self.middle.y + self.height/2)
         self.rt = Point(self.middle.x + self.width/2, self.middle.y + self.height/2)
 
+class Line:
+    def __init__(self, startPoint, endPoint):
+        self.length = sqrt(((startPoint.x - endPoint.x)**2) + ((startPoint.y - endPoint.y)**2))
+        self.start = startPoint
+        self.end = endPoint
+        self.normal = Vector(-(startPoint.y - endPoint.y), startPoint.x - endPoint.x)
+
 
 WIDTH = 800
 HEIGTH = 600
@@ -135,13 +148,16 @@ class CannonBallGame:
         
 
         self.rectangles = []
+        self.lines = []
         self.delta_time = 0
 
         self.going_left = False
         self.going_right = False
 
         self.rectDrawing = False
-        self.rectStartPoint = Point(1,1)
+        self.rectStartPoint = Point(0,0)
+        self.lineDrawing = False
+        self.lineStartPoint = Point(0,0)
 
         #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
         #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
@@ -327,6 +343,22 @@ class CannonBallGame:
             glVertex2f(currPoint.x, self.rectStartPoint.y)
             glEnd()
             glPopMatrix()
+        
+        if self.lineDrawing:
+            curr = pygame.mouse.get_pos()
+            endPoint = Point(curr[0], HEIGTH - curr[1])
+            # glPushMatrix()
+            # glColor3f(1.0, 0.0, 0.0)
+            # glBegin(GL_LINE)
+            # glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
+            # glVertex2f(currPoint.x, currPoint.y)
+            # glVertex2f(self.rectStartPoint.x, currPoint.y)
+            # glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
+            # glVertex2f(currPoint.x, currPoint.y)
+            # glVertex2f(currPoint.x, self.rectStartPoint.y)
+            # glEnd()
+            # glPopMatrix()
+
 
 
         pygame.display.flip()
@@ -341,7 +373,7 @@ class CannonBallGame:
     def new_rectangle(self, startPoint, endPoint):
         #new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30, 50)
         new_rectangle = Rectangle(startPoint, endPoint)
-        if len(self.rectangles) == 0:
+        if len(self.rectangles) == 0 and len(self.lines) == 0:
             self.rectangles.append(new_rectangle)
         else:
             counter = 0
@@ -353,9 +385,29 @@ class CannonBallGame:
                     bool = False
             if (abs(self.goal.middle.x - new_rectangle.middle.x) < (self.goal.width/2 + new_rectangle.width/2)) and (abs(self.goal.middle.y - new_rectangle.middle.y) < (self.goal.height/2 + new_rectangle.height/2)):
                 bool = False
-            
+
             if bool == True:
                 self.rectangles.append(new_rectangle)
+        
+    def new_line(self, startPoint, endPoint):
+        new_line = Line(startPoint, endPoint)
+        if len(self.rectangles) == 0:
+            self.lines.append(new_line)
+        bool = True
+        for rec in self.rectangles:
+                if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
+                    if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
+                        bool = False
+        if (abs(self.goal.middle.x - new_line.start.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.start.y) < (self.goal.height/2)):
+            if (abs(self.goal.middle.x - new_line.end.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.end.y) < (self.goal.height/2)):
+                bool = False
+        if (new_line.start.y <= 100) or (new_line.end.y <= 100):
+            bool = False
+        
+        if bool:
+            self.lines.append(new_line)
+
+        
 
 
 
@@ -392,20 +444,26 @@ class CannonBallGame:
                     startPoint = pygame.mouse.get_pos()
                     self.rectStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
                 if event.button == 3:   #right click
-                    #self.rectDrawing = True
+                    self.lineDrawing = True
                     #draw line 
                     startPoint = pygame.mouse.get_pos()
+                    self.lineStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:   #left click
                     curr = pygame.mouse.get_pos()
                     endPoint = Point(curr[0], HEIGTH - curr[1])
-                    self.new_rectangle(self.rectStartPoint, endPoint)
+                    if endPoint != self.rectStartPoint:
+                        if endPoint.x != self.rectStartPoint.x and endPoint.y != self.rectStartPoint.y:
+                            self.new_rectangle(self.rectStartPoint, endPoint)
                     self.rectDrawing = False
                 if event.button == 3:   #right click
                     #make line if valid
                     curr = pygame.mouse.get_pos()
                     endPoint = Point(curr[0], HEIGTH - curr[1])
+                    if endPoint != self.lineStartPoint:
+                        self.new_line(self.lineStartPoint, endPoint)
+                    self.lineDrawing = False
                     
 
                 
