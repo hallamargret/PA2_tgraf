@@ -40,8 +40,6 @@ class CannonBallGame:
         self.clock = pygame.time.Clock()
         self.angle = 0
         self.speed = 200
-
-        self.goal = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
         
 
         self.rectangles = []
@@ -58,6 +56,17 @@ class CannonBallGame:
 
         self.sideLines = [Line(Point(0, 100), Point((WIDTH/6)*2, 100)), Line(Point(WIDTH, 100), Point(WIDTH - (WIDTH/6)*2, 100))]
 
+        self.level = 1
+
+        goal_level1 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+        goal_level2 = Rectangle(Point((WIDTH/3)-50, HEIGTH-200), Point((WIDTH/3)+50, HEIGTH - 100))
+        goal_level3 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+        goal_level4 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+        goal_level5 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+
+        self.goals = [goal_level1, goal_level2, goal_level3, goal_level4, goal_level5]
+
+
 
     def update(self):
         self.delta_time = self.clock.tick(60) / 1000
@@ -73,7 +82,7 @@ class CannonBallGame:
                 self.cannonball.fired = False
             elif self.cannonball.position.y < 0 or self.cannonball.position.y > HEIGTH:
                 self.cannonball.fired = False
-            if (self.goal.middle.x - 50) <= self.cannonball.position.x <= (self.goal.middle.x + 50) and (self.goal.middle.y - 50) <= self.cannonball.position.y <= (self.goal.middle.y + 50):
+            if (self.goals[self.level-1].middle.x - 50) <= self.cannonball.position.x <= (self.goals[self.level-1].middle.x + 50) and (self.goals[self.level-1].middle.y - 50) <= self.cannonball.position.y <= (self.goals[self.level-1].middle.y + 50):
                 self.cannonball.fired = False
                 print("Next level")
 
@@ -161,7 +170,7 @@ class CannonBallGame:
 
         glPushMatrix()
         glColor3f(0.0, 0.9, 0.0)
-        glTranslate(self.goal.middle.x, self.goal.middle.y, 0)
+        glTranslate(self.goals[self.level-1].middle.x, self.goals[self.level-1].middle.y, 0)
         glBegin(GL_TRIANGLES)
         glVertex2f(0 - 50, 0 - 50)
         glVertex2f(0 - 50, 0 + 50)
@@ -213,37 +222,32 @@ class CannonBallGame:
 
     def new_rectangle(self, startPoint, endPoint):
         new_rectangle = Rectangle(startPoint, endPoint)
-        if len(self.rectangles) == 0 and len(self.lines) == 0:
-            self.rectangles.append(new_rectangle)
-        else:
-            ok_to_append = True
-            for rec in self.rectangles:
-                if (abs(rec.middle.x - new_rectangle.middle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.middle.y - new_rectangle.middle.y) < (rec.height/2 + new_rectangle.height/2)):
-                    ok_to_append = False
-            if (abs(self.goal.middle.x - new_rectangle.middle.x) < (self.goal.width/2 + new_rectangle.width/2)) and (abs(self.goal.middle.y - new_rectangle.middle.y) < (self.goal.height/2 + new_rectangle.height/2)):
+        ok_to_append = True
+        for rec in self.rectangles:
+            if (abs(rec.middle.x - new_rectangle.middle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.middle.y - new_rectangle.middle.y) < (rec.height/2 + new_rectangle.height/2)):
                 ok_to_append = False
+        if (abs(self.goals[self.level-1].middle.x - new_rectangle.middle.x) < ((self.goals[self.level-1].width)/2 + (new_rectangle.width)/2)) and (abs(self.goals[self.level-1].middle.y - new_rectangle.middle.y) < ((self.goals[self.level-1].height)/2 + (new_rectangle.height)/2)):
+            ok_to_append = False
 
-            if ok_to_append == True:
-                self.rectangles.append(new_rectangle)
-        
+        if ok_to_append == True:
+            self.rectangles.append(new_rectangle)
+    
     def new_line(self, startPoint, endPoint):
         new_line = Line(startPoint, endPoint)
-        if len(self.rectangles) == 0:
-            self.lines.append(new_line)
-        else:
-            ok_to_append = True
-            for rec in self.rectangles:
-                    if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
-                        if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
-                            ok_to_append = False
-            if (abs(self.goal.middle.x - new_line.start.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.start.y) < (self.goal.height/2)):
-                if (abs(self.goal.middle.x - new_line.end.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.end.y) < (self.goal.height/2)):
-                    ok_to_append = False
-            if (new_line.start.y <= 100) or (new_line.end.y <= 100):
+        ok_to_append = True
+        for rec in self.rectangles:
+                if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
+                    if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
+                        ok_to_append = False
+        if (abs(self.goals[self.level-1].middle.x - new_line.start.x) < ((self.goals[self.level-1].width)/2)) or (abs(self.goals[self.level-1].middle.y - new_line.start.y) < ((self.goals[self.level-1].height)/2)):
+            if (abs(self.goals[self.level-1].middle.x - new_line.end.x) < ((self.goals[self.level-1].width)/2)) or (abs(self.goals[self.level-1].middle.y - new_line.end.y) < ((self.goals[self.level-1].height)/2)):
+                print("Ég er hér")
                 ok_to_append = False
-            
-            if ok_to_append:
-                self.lines.append(new_line)
+        if (new_line.start.y <= 100) or (new_line.end.y <= 100):
+            ok_to_append = False
+        
+        if ok_to_append:
+            self.lines.append(new_line)
 
 
     def game_loop(self):
