@@ -111,12 +111,28 @@ class Rectangle:
         self.lt = Point(self.middle.x - self.width/2, self.middle.y + self.height/2)
         self.rt = Point(self.middle.x + self.width/2, self.middle.y + self.height/2)
 
+    def draw(self):
+        glBegin(GL_TRIANGLES)
+        glVertex2f(self.lb.x, self.lb.y)
+        glVertex2f(self.lt.x, self.lt.y)
+        glVertex2f(self.rb.x, self.rb.y)
+        glVertex2f(self.lt.x, self.lt.y)
+        glVertex2f(self.rb.x, self.rb.y)
+        glVertex2f(self.rt.x, self.rt.y)
+        glEnd()
+
 class Line:
     def __init__(self, startPoint, endPoint):
         self.length = sqrt(((startPoint.x - endPoint.x)**2) + ((startPoint.y - endPoint.y)**2))
         self.start = startPoint
         self.end = endPoint
         self.normal = Vector(-(startPoint.y - endPoint.y), startPoint.x - endPoint.x)
+
+    def draw(self):
+        glBegin(GL_LINES)
+        glVertex2f(self.start.x, self.start.y)
+        glVertex2f(self.end.x, self.end.y)
+        glEnd()
 
 
 WIDTH = 800
@@ -158,6 +174,9 @@ class CannonBallGame:
         self.rectStartPoint = Point(0,0)
         self.lineDrawing = False
         self.lineStartPoint = Point(0,0)
+
+        self.sideLines = [Line(Point(0, 100), Point((WIDTH/6)*2, 100)), Line(Point(WIDTH, 100), Point(WIDTH - (WIDTH/6)*2, 100))]
+
 
         #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
         #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
@@ -274,12 +293,9 @@ class CannonBallGame:
         gluOrtho2D(0, WIDTH, 0, HEIGTH)
 
         glColor3f(1.0, 0.7, 0.0)
-        glBegin(GL_LINES)
-        glVertex2f(0, 100)
-        glVertex2f((WIDTH/6)*2, 100)
-        glVertex2f(WIDTH, 100)
-        glVertex2f(WIDTH - (WIDTH/6)*2, 100)
-        glEnd()
+        glLineWidth(2.0)
+        for line in self.sideLines:
+            line.draw()
 
 
         if self.cannonball.fired == True:
@@ -319,14 +335,21 @@ class CannonBallGame:
         glPushMatrix()
         glColor3f(0.0, 0.0, 1.0)
         for rectangle in self.rectangles:
-            glBegin(GL_TRIANGLES)
-            glVertex2f(rectangle.lb.x, rectangle.lb.y)
-            glVertex2f(rectangle.lt.x, rectangle.lt.y)
-            glVertex2f(rectangle.rb.x, rectangle.rb.y)
-            glVertex2f(rectangle.lt.x, rectangle.lt.y)
-            glVertex2f(rectangle.rb.x, rectangle.rb.y)
-            glVertex2f(rectangle.rt.x, rectangle.rt.y)
-            glEnd()
+            # glBegin(GL_TRIANGLES)
+            # glVertex2f(rectangle.lb.x, rectangle.lb.y)
+            # glVertex2f(rectangle.lt.x, rectangle.lt.y)
+            # glVertex2f(rectangle.rb.x, rectangle.rb.y)
+            # glVertex2f(rectangle.lt.x, rectangle.lt.y)
+            # glVertex2f(rectangle.rb.x, rectangle.rb.y)
+            # glVertex2f(rectangle.rt.x, rectangle.rt.y)
+            # glEnd()
+            rectangle.draw()
+        glPopMatrix()
+
+        glPushMatrix()
+        glColor3f(0.0, 1.0, 1.0)
+        for line in self.lines:
+            line.draw()
         glPopMatrix()
 
         if self.rectDrawing:
@@ -347,17 +370,13 @@ class CannonBallGame:
         if self.lineDrawing:
             curr = pygame.mouse.get_pos()
             endPoint = Point(curr[0], HEIGTH - curr[1])
-            # glPushMatrix()
-            # glColor3f(1.0, 0.0, 0.0)
-            # glBegin(GL_LINE)
-            # glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
-            # glVertex2f(currPoint.x, currPoint.y)
-            # glVertex2f(self.rectStartPoint.x, currPoint.y)
-            # glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
-            # glVertex2f(currPoint.x, currPoint.y)
-            # glVertex2f(currPoint.x, self.rectStartPoint.y)
-            # glEnd()
-            # glPopMatrix()
+            glPushMatrix()
+            glColor3f(1.0, 1.0, 1.0)
+            glBegin(GL_LINES)
+            glVertex2f(endPoint.x, endPoint.y)
+            glVertex2f(self.lineStartPoint.x, self.lineStartPoint.y)
+            glEnd()
+            glPopMatrix()
 
 
 
