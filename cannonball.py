@@ -1,3 +1,4 @@
+from ctypes import LittleEndianStructure
 import pygame
 from pygame import key
 from pygame import rect
@@ -12,128 +13,11 @@ from random import *
 import math
 from math import *
 
-class Vector:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-    
-    def __add__(self, other):
-        new_x = self.x + other.x
-        new_y = self.y + other.y
-        return Vector(new_x, new_y)
-    
-    def __sub__(self, other):
-        new_x = self.x - other.x
-        new_y = self.y - other.y
-        return Vector(new_x, new_y)
-
-    def dot_product(self, other):
-        return (self.x * other.x) + (self.y * other.y)
-
-    def __mul__(self, other):
-        return Vector(self.x * other, self.y * other)
-
-class Point:
-
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-    def __add__(self, other):
-        new_x = self.x + other.x
-        new_y = self.y + other.y
-        return Point(new_x, new_y)
-    
-    def __sub__(self, other):
-        new_x = self.x - other.x
-        new_y = self.y - other.y
-        return Point(new_x, new_y)
-
-    def __eq__(self, other):
-        if self.x == other.x and self.y == other.y:
-            return True
-        else:
-            return False
-    
-    def distance(self, other):
-        return sqrt(((self.x - other.x)**2) + ((self.y - other.y)**2))
-
-
-
-class Ball:
-
-    def __init__(self, slices, r, g, b):
-        self.r = r
-        self.g = g
-        self.b = b
-        self.angle_change = (pi * 2)/slices
-
-    def display(self):
-        glColor3f(self.r, self.g, self.b)
-        glBegin(GL_TRIANGLE_FAN)
-        tmp_angle = 0
-        while tmp_angle < 2 * pi:
-            x = cos(tmp_angle)
-            y = sin(tmp_angle)
-            glVertex2f(x, y)
-            tmp_angle += self.angle_change
-        glEnd()
-
-class BallObject:
-    def __init__(self, radius, position, motion, r, g, b):
-        self.position = position
-        self.radius = radius
-        self.motion = motion
-        self.red = r
-        self.green = g
-        self.blue = b
-        self.ball = Ball(24, r, g, b)
-        self.fired = False
-
-    def display_object(self):
-        glPushMatrix()
-        glColor3f(self.red, self.green, self.blue)
-
-        glTranslate(self.position.x, self.position.y, 0)
-        glScale(self.radius, self.radius, 1)
-
-        self.ball.display()
-        glPopMatrix()
-
-class Rectangle:
-    def __init__(self, startPoint, endPoint): # Finna eitthvad annad ord fyrir extra!! 
-        self.height = abs(startPoint.y - endPoint.y)
-        self.width = abs(startPoint.x - endPoint.x)
-        self.middle = Point(((startPoint.x + endPoint.x)/2), ((startPoint.y + endPoint.y)/2))
-        self.lb = Point(self.middle.x - self.width/2, self.middle.y - self.height/2)
-        self.rb = Point(self.middle.x + self.width/2, self.middle.y - self.height/2)
-        self.lt = Point(self.middle.x - self.width/2, self.middle.y + self.height/2)
-        self.rt = Point(self.middle.x + self.width/2, self.middle.y + self.height/2)
-
-    def draw(self):
-        glBegin(GL_TRIANGLES)
-        glVertex2f(self.lb.x, self.lb.y)
-        glVertex2f(self.lt.x, self.lt.y)
-        glVertex2f(self.rb.x, self.rb.y)
-        glVertex2f(self.lt.x, self.lt.y)
-        glVertex2f(self.rb.x, self.rb.y)
-        glVertex2f(self.rt.x, self.rt.y)
-        glEnd()
-
-class Line:
-    def __init__(self, startPoint, endPoint):
-        self.length = sqrt(((startPoint.x - endPoint.x)**2) + ((startPoint.y - endPoint.y)**2))
-        self.start = startPoint
-        self.end = endPoint
-        self.normal = Vector(-(startPoint.y - endPoint.y), startPoint.x - endPoint.x)
-
-    def draw(self):
-        glBegin(GL_LINES)
-        glVertex2f(self.start.x, self.start.y)
-        glVertex2f(self.end.x, self.end.y)
-        glEnd()
-
+from ballObject import BallObject
+from point import Point
+from vector import Vector
+from rectangle import Rectangle
+from line import Line
 
 WIDTH = 800
 HEIGTH = 600
@@ -145,10 +29,7 @@ class CannonBallGame:
         pygame.display.set_mode((WIDTH, HEIGTH), DOUBLEBUF|OPENGL)
         glClearColor(0.2, 0.5, 0.4, 0.2)
 
-        middle = WIDTH/2
-
-        #self.cannon_direction = Vector(0,1)
-        self.cannon_point = Point(int(middle), 0)
+        self.cannon_point = Point(int(WIDTH/2), 0)
 
 
         self.ball_position = Point(0, 0)
@@ -157,7 +38,7 @@ class CannonBallGame:
         self.cannonball = BallObject(10, self.ball_position, self.ball_motion, 1.0, 1.0, 1.0)
 
         self.clock = pygame.time.Clock()
-        self.angle = - 45
+        self.angle = 0
         self.speed = 200
 
         self.goal = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
@@ -178,10 +59,6 @@ class CannonBallGame:
         self.sideLines = [Line(Point(0, 100), Point((WIDTH/6)*2, 100)), Line(Point(WIDTH, 100), Point(WIDTH - (WIDTH/6)*2, 100))]
 
 
-        #self.cannon_direction.x = self.speed * cos(self.angle * 3.1415/180.0)
-        #self.cannon_direction.y = self.speed * sin(self.angle * 3.1415/180.0)
-
-
     def update(self):
         self.delta_time = self.clock.tick(60) / 1000
 
@@ -190,17 +67,6 @@ class CannonBallGame:
             self.angle += 180 * self.delta_time
         if self.going_right and self.angle > -45:
             self.angle -= 180 * self.delta_time
-
-        # pressed = pygame.key.get_pressed()
-        # if pressed[pygame.K_LEFT]:
-        #     if self.angle < 45:
-        #         self.angle += 180 * self.delta_time
-        # if pressed[pygame.K_RIGHT]:
-        #     if self.angle > -45:
-        #         self.angle -= 180 * self.delta_time
-        
-        #self.cannon_direction.x = 
-        #self.cannon_direction.y = self.speed * cos(self.angle * 3.1415/180.0)
 
         if self.cannonball.fired == True:
             if self.cannonball.position.x < 0 or self.cannonball.position.x > WIDTH:
@@ -211,75 +77,49 @@ class CannonBallGame:
                 self.cannonball.fired = False
                 print("Next level")
 
-
         self.cannonball.position.x += self.cannonball.motion.x * self.delta_time
         self.cannonball.position.y += self.cannonball.motion.y * self.delta_time
         
         if self.cannonball.fired == True:
             self.bounce_check()
 
-
-
+    def line_bounce_check(self, line):
+        dot_product_denom = line.normal.dot_product(self.cannonball.motion)
+        if dot_product_denom != 0:
+            thit = (line.normal.dot_product(line.start - self.cannonball.position))/dot_product_denom
+            if 0 <= thit < (self.delta_time):
+                phit = self.cannonball.position + (self.cannonball.motion * thit)
+                if (int(line.start.distance(phit) + line.end.distance(phit))) == int(line.length): # Check if the point is on the line
+                    unitNormal = Vector(line.normal.x / sqrt(line.normal.x**2 + line.normal.y**2), line.normal.y / sqrt(line.normal.x**2 + line.normal.y**2))
+                    new_motion = self.cannonball.motion - (unitNormal * (2.0 * (self.cannonball.motion.dot_product(unitNormal))))
+                    self.cannonball.position = phit
+                    self.cannonball.motion = new_motion
+                    return True
 
     def bounce_check(self):
         for rectangle in self.rectangles:
             if self.cannonball.motion.x > 0: #left side of rectangle
-                n = Vector(-(rectangle.lt - rectangle.lb).y, (rectangle.lt - rectangle.lb).x)
-                thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
-                if 0 <= thit < (self.delta_time):
-                    phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    print("checking if hits")
-                    if (rectangle.lt.distance(phit) + rectangle.lb.distance(phit) == rectangle.lt.distance(rectangle.lb)):
-                        print(rectangle.lt.distance(phit) + rectangle.lb.distance(phit) == rectangle.lt.distance(rectangle.lb))
-                        new_motion = self.cannonball.motion - (Vector(-1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(-1, 0)))))
-                        print("it hits")
-                        self.cannonball.position = phit
-                        self.cannonball.motion = new_motion
+                if self.line_bounce_check(Line(rectangle.lt, rectangle.lb)):
+                    break
             elif self.cannonball.motion.x < 0: 
-                n = Vector(-(rectangle.rt - rectangle.rb).y, (rectangle.rt - rectangle.rb).x)
-                #print("n: (" + str(n.x) + ", " + str(n.y) + ")")
-                thit = (n.dot_product(rectangle.rt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
-                if 0 <= thit < (self.delta_time):
-                    phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    if (rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb)):
-                        print(rectangle.rt.distance(phit) + rectangle.rb.distance(phit) == rectangle.rt.distance(rectangle.rb))
-                        new_motion = self.cannonball.motion - (Vector(1, 0) *(2.0 * (self.cannonball.motion.dot_product(Vector(1, 0)))))
-                        print("it hits")
-                        self.cannonball.position = phit
-                        self.cannonball.motion = new_motion
-                        print("the motion: (" + str(self.cannonball.motion.x) + str(", ") + str(self.cannonball.motion.y))
+                if self.line_bounce_check(Line(rectangle.rt, rectangle.rb)):
+                    break
 
             if self.cannonball.motion.y > 0: # bottom of rectangle
-                n = Vector(-(rectangle.lb - rectangle.rb).y, (rectangle.lb - rectangle.rb).x)
-                thit = (n.dot_product(rectangle.lb - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
-                if 0 <= thit < (self.delta_time):
-                    phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    print("checking if hits")
-                    if (rectangle.lb.distance(phit) + rectangle.rb.distance(phit) == rectangle.lb.distance(rectangle.rb)):
-                        print(rectangle.lb.distance(phit) + rectangle.rb.distance(phit) == rectangle.lb.distance(rectangle.rb))
-                        new_motion = self.cannonball.motion - (Vector(0, -1) *(2.0 * (self.cannonball.motion.dot_product(Vector(0, -1)))))
-                        print("it hits")
-                        self.cannonball.position = phit
-                        self.cannonball.motion = new_motion
+                if self.line_bounce_check(Line(rectangle.lb, rectangle.rb)):
+                    break
+
             elif self.cannonball.motion.y < 0:
-                n = Vector(-(rectangle.lt - rectangle.rt).y, (rectangle.lt - rectangle.rt).x)
-                thit = (n.dot_product(rectangle.lt - self.cannonball.position))/(n.dot_product(self.cannonball.motion))
-                if 0 <= thit < (self.delta_time):
-                    phit = self.cannonball.position + (self.cannonball.motion * thit)
-                    print("checking if hits")
-                    if (rectangle.lt.distance(phit) + rectangle.rt.distance(phit) == rectangle.lt.distance(rectangle.rt)):
-                        print(rectangle.lt.distance(phit) + rectangle.rt.distance(phit) == rectangle.lt.distance(rectangle.rt))
-                        new_motion = self.cannonball.motion - (Vector(0, 1) *(2.0 * (self.cannonball.motion.dot_product(Vector(0, 1)))))
-                        print("it hits")
-                        self.cannonball.position = phit
-                        self.cannonball.motion = new_motion
-            
-            # if self.cannonball.motion.y > 0:
-            #     n = Vector(-((rectangle.y - 30) - (rectangle.y - 30)), (rectangle.x + 30) - (rectangle.x - 30))
-            #     thit = (n.dot_product(Vector(((rectangle.x - 30) - self.cannonball.position.x), ((rectangle.y - 30) - self.cannonball.position.y))))/n.dot_product(self.cannonball.motion)
-            #     print(thit)
-                
-    #     # Rulla i gegnum kassana i skjanum og gera bounce check
+                if self.line_bounce_check(Line(rectangle.lt, rectangle.rt)):
+                    break
+        
+        for line in self.lines:
+            if self.line_bounce_check(line):
+                break
+        
+        for line in self.sideLines:
+            if self.line_bounce_check(line):
+                break
 
 
     def display(self):
@@ -335,14 +175,6 @@ class CannonBallGame:
         glPushMatrix()
         glColor3f(0.0, 0.0, 1.0)
         for rectangle in self.rectangles:
-            # glBegin(GL_TRIANGLES)
-            # glVertex2f(rectangle.lb.x, rectangle.lb.y)
-            # glVertex2f(rectangle.lt.x, rectangle.lt.y)
-            # glVertex2f(rectangle.rb.x, rectangle.rb.y)
-            # glVertex2f(rectangle.lt.x, rectangle.lt.y)
-            # glVertex2f(rectangle.rb.x, rectangle.rb.y)
-            # glVertex2f(rectangle.rt.x, rectangle.rt.y)
-            # glEnd()
             rectangle.draw()
         glPopMatrix()
 
@@ -355,30 +187,20 @@ class CannonBallGame:
         if self.rectDrawing:
             curr = pygame.mouse.get_pos()
             currPoint = Point(curr[0], HEIGTH - curr[1])
+            new_rect = Rectangle(currPoint, self.rectStartPoint)
             glPushMatrix()
             glColor3f(1.0, 0.0, 0.0)
-            glBegin(GL_TRIANGLES)
-            glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
-            glVertex2f(currPoint.x, currPoint.y)
-            glVertex2f(self.rectStartPoint.x, currPoint.y)
-            glVertex2f(self.rectStartPoint.x, self.rectStartPoint.y)
-            glVertex2f(currPoint.x, currPoint.y)
-            glVertex2f(currPoint.x, self.rectStartPoint.y)
-            glEnd()
+            new_rect.draw()
             glPopMatrix()
         
         if self.lineDrawing:
             curr = pygame.mouse.get_pos()
-            endPoint = Point(curr[0], HEIGTH - curr[1])
+            currPoint = Point(curr[0], HEIGTH - curr[1])
+            new_line = Line(currPoint, self.lineStartPoint)
             glPushMatrix()
             glColor3f(1.0, 1.0, 1.0)
-            glBegin(GL_LINES)
-            glVertex2f(endPoint.x, endPoint.y)
-            glVertex2f(self.lineStartPoint.x, self.lineStartPoint.y)
-            glEnd()
+            new_line.draw()
             glPopMatrix()
-
-
 
         pygame.display.flip()
     
@@ -390,45 +212,38 @@ class CannonBallGame:
         self.cannonball.position.y = self.cannonball.motion.y * self.delta_time
 
     def new_rectangle(self, startPoint, endPoint):
-        #new_rectangle = Rectangle(position[0], HEIGTH - position[1], 30, 50)
         new_rectangle = Rectangle(startPoint, endPoint)
         if len(self.rectangles) == 0 and len(self.lines) == 0:
             self.rectangles.append(new_rectangle)
         else:
-            counter = 0
-            bool = True
+            ok_to_append = True
             for rec in self.rectangles:
-                counter += 1
-                print("rec number: ", str(counter))
                 if (abs(rec.middle.x - new_rectangle.middle.x) < (rec.width/2 + new_rectangle.width/2)) and (abs(rec.middle.y - new_rectangle.middle.y) < (rec.height/2 + new_rectangle.height/2)):
-                    bool = False
+                    ok_to_append = False
             if (abs(self.goal.middle.x - new_rectangle.middle.x) < (self.goal.width/2 + new_rectangle.width/2)) and (abs(self.goal.middle.y - new_rectangle.middle.y) < (self.goal.height/2 + new_rectangle.height/2)):
-                bool = False
+                ok_to_append = False
 
-            if bool == True:
+            if ok_to_append == True:
                 self.rectangles.append(new_rectangle)
         
     def new_line(self, startPoint, endPoint):
         new_line = Line(startPoint, endPoint)
         if len(self.rectangles) == 0:
             self.lines.append(new_line)
-        bool = True
-        for rec in self.rectangles:
-                if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
-                    if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
-                        bool = False
-        if (abs(self.goal.middle.x - new_line.start.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.start.y) < (self.goal.height/2)):
-            if (abs(self.goal.middle.x - new_line.end.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.end.y) < (self.goal.height/2)):
-                bool = False
-        if (new_line.start.y <= 100) or (new_line.end.y <= 100):
-            bool = False
-        
-        if bool:
-            self.lines.append(new_line)
-
-        
-
-
+        else:
+            ok_to_append = True
+            for rec in self.rectangles:
+                    if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
+                        if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
+                            ok_to_append = False
+            if (abs(self.goal.middle.x - new_line.start.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.start.y) < (self.goal.height/2)):
+                if (abs(self.goal.middle.x - new_line.end.x) < (self.goal.width/2)) and (abs(self.goal.middle.y - new_line.end.y) < (self.goal.height/2)):
+                    ok_to_append = False
+            if (new_line.start.y <= 100) or (new_line.end.y <= 100):
+                ok_to_append = False
+            
+            if ok_to_append:
+                self.lines.append(new_line)
 
 
     def game_loop(self):
@@ -444,8 +259,9 @@ class CannonBallGame:
                 elif event.key == K_q:
                     glClearColor(random(), random(), random(), 1.0)
                 elif event.key == K_SPACE or event.key == K_z:
-                    if self.cannonball.fired == False:
-                        self.fire_ball()
+                    if self.lineDrawing == False and self.rectDrawing == False:
+                        if self.cannonball.fired == False:
+                            self.fire_ball()
                 elif event.key == K_LEFT:
                     self.going_left = True
                 elif event.key == K_RIGHT:
@@ -459,33 +275,36 @@ class CannonBallGame:
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:   #left click
-                    self.rectDrawing = True
-                    startPoint = pygame.mouse.get_pos()
-                    self.rectStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
+                    if self.cannonball.fired == False:
+                        self.rectDrawing = True
+                        startPoint = pygame.mouse.get_pos()
+                        self.rectStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
                 if event.button == 3:   #right click
-                    self.lineDrawing = True
-                    #draw line 
-                    startPoint = pygame.mouse.get_pos()
-                    self.lineStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
+                    if self.cannonball.fired == False:
+                        self.lineDrawing = True
+                        #draw line 
+                        startPoint = pygame.mouse.get_pos()
+                        self.lineStartPoint = Point(startPoint[0], HEIGTH - startPoint[1])
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:   #left click
-                    curr = pygame.mouse.get_pos()
-                    endPoint = Point(curr[0], HEIGTH - curr[1])
-                    if endPoint != self.rectStartPoint:
-                        if endPoint.x != self.rectStartPoint.x and endPoint.y != self.rectStartPoint.y:
-                            self.new_rectangle(self.rectStartPoint, endPoint)
-                    self.rectDrawing = False
+                    if self.cannonball.fired == False:
+                        curr = pygame.mouse.get_pos()
+                        endPoint = Point(curr[0], HEIGTH - curr[1])
+                        if endPoint != self.rectStartPoint:
+                            if endPoint.x != self.rectStartPoint.x and endPoint.y != self.rectStartPoint.y:
+                                self.new_rectangle(self.rectStartPoint, endPoint)
+                        self.rectDrawing = False
                 if event.button == 3:   #right click
                     #make line if valid
-                    curr = pygame.mouse.get_pos()
-                    endPoint = Point(curr[0], HEIGTH - curr[1])
-                    if endPoint != self.lineStartPoint:
-                        self.new_line(self.lineStartPoint, endPoint)
-                    self.lineDrawing = False
+                    if self.cannonball.fired == False:
+                        curr = pygame.mouse.get_pos()
+                        endPoint = Point(curr[0], HEIGTH - curr[1])
+                        if endPoint != self.lineStartPoint:
+                            self.new_line(self.lineStartPoint, endPoint)
+                        self.lineDrawing = False
                     
 
-                
         self.update()
         self.display()
 
