@@ -60,11 +60,13 @@ class CannonBallGame:
 
         goal_level1 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
         goal_level2 = Rectangle(Point((WIDTH/3)-50, HEIGTH-200), Point((WIDTH/3)+50, HEIGTH - 100))
-        goal_level3 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
+        goal_level3 = Rectangle(Point((WIDTH/6)-50, HEIGTH-400), Point((WIDTH/9)+50, HEIGTH))
         goal_level4 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
         goal_level5 = Rectangle(Point((WIDTH/2)-50, HEIGTH-100), Point((WIDTH/2)+50, HEIGTH))
 
         self.goals = [goal_level1, goal_level2, goal_level3, goal_level4, goal_level5]
+
+        self.lives = 3
 
 
 
@@ -85,6 +87,10 @@ class CannonBallGame:
             if (self.goals[self.level-1].middle.x - 50) <= self.cannonball.position.x <= (self.goals[self.level-1].middle.x + 50) and (self.goals[self.level-1].middle.y - 50) <= self.cannonball.position.y <= (self.goals[self.level-1].middle.y + 50):
                 self.cannonball.fired = False
                 print("Next level")
+                if self.level < 5:
+                    self.level += 1
+                    self.rectangles = []
+                    self.lines = []
 
         self.cannonball.position.x += self.cannonball.motion.x * self.delta_time
         self.cannonball.position.y += self.cannonball.motion.y * self.delta_time
@@ -110,15 +116,15 @@ class CannonBallGame:
             if self.cannonball.motion.x > 0: #left side of rectangle
                 if self.line_bounce_check(Line(rectangle.lt, rectangle.lb)):
                     break
-            elif self.cannonball.motion.x < 0: 
+            elif self.cannonball.motion.x < 0: # check if hits right side of rectangle
                 if self.line_bounce_check(Line(rectangle.rt, rectangle.rb)):
                     break
 
-            if self.cannonball.motion.y > 0: # bottom of rectangle
+            if self.cannonball.motion.y > 0: # check if hits bottom of rectangle
                 if self.line_bounce_check(Line(rectangle.lb, rectangle.rb)):
                     break
 
-            elif self.cannonball.motion.y < 0:
+            elif self.cannonball.motion.y < 0:  # check if hits top of rectangle
                 if self.line_bounce_check(Line(rectangle.lt, rectangle.rt)):
                     break
         
