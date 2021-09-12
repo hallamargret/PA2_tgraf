@@ -43,7 +43,17 @@ class CannonBallGame:
         
 
         self.rectangles = []
+        self.rectangles_level2 = []
+        self.rectangles_level3 = []
+        self.rectangles_level4 = []
+        self.rectangles_level5 = []
+
         self.lines = []
+        self.lines_level2 = [Line(Point(200, 100), Point((WIDTH/6)*2, 200)), Line(Point(WIDTH, 100), Point(WIDTH - (WIDTH/6)*2, 100))]
+        self.lines_level3 = []
+        self.lines_level4 = []
+        self.lines_level5 = []
+
         self.delta_time = 0
 
         self.going_left = False
@@ -86,9 +96,14 @@ class CannonBallGame:
                 self.cannonball.fired = False
             if (self.goals[self.level-1].middle.x - 50) <= self.cannonball.position.x <= (self.goals[self.level-1].middle.x + 50) and (self.goals[self.level-1].middle.y - 50) <= self.cannonball.position.y <= (self.goals[self.level-1].middle.y + 50):
                 self.cannonball.fired = False
-                print("Next level")
+                
                 if self.level < 5:
+                    print("Next level, level: " + str(self.level + 1))
                     self.level += 1
+                    self.rectangles = []
+                    self.lines = []
+                else:
+                    #stay on level 5 which is the highest level
                     self.rectangles = []
                     self.lines = []
 
@@ -245,10 +260,10 @@ class CannonBallGame:
                 if (abs(rec.middle.x - new_line.start.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.start.y) < (rec.height/2)):
                     if (abs(rec.middle.x - new_line.end.x) < (rec.width/2)) and (abs(rec.middle.y - new_line.end.y) < (rec.height/2)):
                         ok_to_append = False
-        if (abs(self.goals[self.level-1].middle.x - new_line.start.x) < ((self.goals[self.level-1].width)/2)) or (abs(self.goals[self.level-1].middle.y - new_line.start.y) < ((self.goals[self.level-1].height)/2)):
-            if (abs(self.goals[self.level-1].middle.x - new_line.end.x) < ((self.goals[self.level-1].width)/2)) or (abs(self.goals[self.level-1].middle.y - new_line.end.y) < ((self.goals[self.level-1].height)/2)):
-                print("Ég er hér")
-                ok_to_append = False
+        if (abs(self.goals[self.level-1].middle.x - new_line.start.x) < ((self.goals[self.level-1].width)/2)) and (abs(self.goals[self.level-1].middle.y - new_line.start.y) < ((self.goals[self.level-1].height)/2)):
+            ok_to_append = False
+        if (abs(self.goals[self.level-1].middle.x - new_line.end.x) < ((self.goals[self.level-1].width)/2)) and (abs(self.goals[self.level-1].middle.y - new_line.end.y) < ((self.goals[self.level-1].height)/2)):
+            ok_to_append = False
         if (new_line.start.y <= 100) or (new_line.end.y <= 100):
             ok_to_append = False
         
