@@ -77,6 +77,13 @@ class CannonBallGame:
         self.goals = [goal_level1, goal_level2, goal_level3, goal_level4, goal_level5]
 
         self.lives = 3
+        self.victory = False
+    
+    def reset_game(self):
+        self.lives = 3
+        self.victory = False
+        self.level = 1
+
 
 
 
@@ -103,7 +110,9 @@ class CannonBallGame:
                     self.rectangles = []
                     self.lines = []
                 else:
-                    #stay on level 5 which is the highest level
+                    #Do somthing to show the player that he has won
+                    #restart game
+                    self.victory = True
                     self.rectangles = []
                     self.lines = []
 
@@ -232,6 +241,63 @@ class CannonBallGame:
             new_line.draw()
             glPopMatrix()
 
+        if self.victory:
+            glColor3f(1.0, 0.7, 0.0)
+            glLineWidth(2.0)
+            middle = Point(WIDTH/2, HEIGTH/2)
+            glPushMatrix()
+            glBegin(GL_LINES)
+            #Y
+            glVertex2f(middle.x - 155, middle.y + 15)
+            glVertex2f(middle.x - 155, middle.y - 50)
+            glVertex2f(middle.x - 155, middle.y + 15)
+            glVertex2f(middle.x - 180, middle.y + 50)
+            glVertex2f(middle.x - 155, middle.y + 15)
+            glVertex2f(middle.x - 130, middle.y + 50)
+            #O
+            glVertex2f(middle.x - 120, middle.y - 50)
+            glVertex2f(middle.x - 120, middle.y + 50)
+            glVertex2f(middle.x - 120, middle.y + 50)
+            glVertex2f(middle.x - 70, middle.y + 50)
+            glVertex2f(middle.x - 70, middle.y + 50)
+            glVertex2f(middle.x - 70, middle.y - 50)
+            glVertex2f(middle.x - 70, middle.y - 50)
+            glVertex2f(middle.x - 120, middle.y - 50)
+            #U
+            glVertex2f(middle.x - 60, middle.y + 50)
+            glVertex2f(middle.x - 60, middle.y - 50)
+            glVertex2f(middle.x - 60, middle.y - 50)
+            glVertex2f(middle.x - 10, middle.y - 50)
+            glVertex2f(middle.x - 10, middle.y - 50)
+            glVertex2f(middle.x - 10, middle.y + 50)
+            #W
+            glVertex2f(middle.x + 10, middle.y + 50)
+            glVertex2f(middle.x + 22, middle.y - 50)
+            glVertex2f(middle.x + 22, middle.y - 50)
+            glVertex2f(middle.x + 35, middle.y)
+            glVertex2f(middle.x + 35, middle.y)
+            glVertex2f(middle.x + 48, middle.y - 50)
+            glVertex2f(middle.x + 48, middle.y - 50)
+            glVertex2f(middle.x + 60, middle.y + 50)
+            #O
+            glVertex2f(middle.x + 120, middle.y - 50)
+            glVertex2f(middle.x + 120, middle.y + 50)
+            glVertex2f(middle.x + 120, middle.y + 50)
+            glVertex2f(middle.x + 70, middle.y + 50)
+            glVertex2f(middle.x + 70, middle.y + 50)
+            glVertex2f(middle.x + 70, middle.y - 50)
+            glVertex2f(middle.x + 70, middle.y - 50)
+            glVertex2f(middle.x + 120, middle.y - 50)
+            #N
+            glVertex2f(middle.x + 130, middle.y - 50)
+            glVertex2f(middle.x + 130, middle.y + 50)
+            glVertex2f(middle.x + 130, middle.y + 50)
+            glVertex2f(middle.x + 180, middle.y - 50)
+            glVertex2f(middle.x + 180, middle.y - 50)
+            glVertex2f(middle.x + 180, middle.y + 50)
+            glEnd()
+            glPopMatrix()
+
         pygame.display.flip()
     
     def fire_ball(self):
@@ -278,19 +344,22 @@ class CannonBallGame:
                 quit()
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == K_ESCAPE:
-                    pygame.quit()
-                    quit()
-                elif event.key == K_q:
-                    glClearColor(random(), random(), random(), 1.0)
-                elif event.key == K_SPACE or event.key == K_z:
-                    if self.lineDrawing == False and self.rectDrawing == False:
-                        if self.cannonball.fired == False:
-                            self.fire_ball()
-                elif event.key == K_LEFT:
-                    self.going_left = True
-                elif event.key == K_RIGHT:
-                    self.going_right = True
+                if self.victory:
+                    self.reset_game()
+                else:
+                    if event.key == K_ESCAPE:
+                        pygame.quit()
+                        quit()
+                    elif event.key == K_q:
+                        glClearColor(random(), random(), random(), 1.0)
+                    elif event.key == K_SPACE or event.key == K_z:
+                        if self.lineDrawing == False and self.rectDrawing == False:
+                            if self.cannonball.fired == False:
+                                self.fire_ball()
+                    elif event.key == K_LEFT:
+                        self.going_left = True
+                    elif event.key == K_RIGHT:
+                        self.going_right = True
 
             elif event.type == pygame.KEYUP:
                 if event.key == K_LEFT:
